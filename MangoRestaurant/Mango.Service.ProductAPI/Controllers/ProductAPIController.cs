@@ -1,6 +1,7 @@
 ﻿using Mango.Service.ProductAPI.Model.Dto;
 using Mango.Service.ProductAPI.Repository.Dto;
 using Mango.Service.ProductAPI.Repository.Product;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -21,6 +22,7 @@ namespace Mango.Service.ProductAPI.Controllers
             _productRepository = productRepository;
             this._response = new ReponseDto();
         }
+        [Authorize]
         [HttpGet]
         public async Task<object> Get()
         {
@@ -29,13 +31,14 @@ namespace Mango.Service.ProductAPI.Controllers
                 IEnumerable<ProductDto> productDtos = await _productRepository.GetProducts();
                 _response.Result = productDtos;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessage = new List<string> { ex.Message };
             }
             return _response;
         }
+        [Authorize]
         [HttpGet]
         [Route("{id}")]
         public async Task<object> Get(int id)
@@ -45,28 +48,30 @@ namespace Mango.Service.ProductAPI.Controllers
                 var productDto = await _productRepository.GetProductById(id);
                 _response.Result = productDto;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessage = new List<string> { ex.Message };
             }
             return _response;
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<object> Post([FromBody] ProductDto productDto) 
+        public async Task<object> Post([FromBody] ProductDto productDto)
         {
             try
             {
                 var model = await _productRepository.CreateUpdateProduct(productDto);
                 _response.Result = model;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.ErrorMessage= new List<string> { ex.Message };
+                _response.ErrorMessage = new List<string> { ex.Message };
             }
             return _response;
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<object> Put([FromBody] ProductDto productDto)
         {
@@ -82,7 +87,9 @@ namespace Mango.Service.ProductAPI.Controllers
             }
             return _response;
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete]
+        [Route("{id}")]
         public async Task<object> Delete(int id)
         {
             try
